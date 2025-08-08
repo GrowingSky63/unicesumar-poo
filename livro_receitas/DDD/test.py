@@ -72,7 +72,7 @@ if __name__ == "__main__":
         receitas=[receita2]
     )
 
-    autor = Autor('Eric')
+    autor = Autor('Eric Verschoor')
 
     livro = LivroReceitas(
         titulo='Livro de Teste',
