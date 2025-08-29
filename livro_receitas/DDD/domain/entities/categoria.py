@@ -6,4 +6,4 @@ from domain.entities.receita import Receita
 class Categoria:
     nome: str
     descricao: str
-    receitas: list[Receita] = None
+    receitas: list[Receita] = []
