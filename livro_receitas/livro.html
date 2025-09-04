@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Livro de Receitas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #f5f1e8 0%, #e8ddd4 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #5d4e37;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar h2 {
+            color: #8b4513;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #d2b48c 0%, #daa520 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #daa520 0%, #b8860b 100%);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+            transform: scale(1.05);
+        }
+
+        .book-container {
+            flex: 1;
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .book {
+            width: 800px;
+            height: 600px;
+            position: relative;
+            transform-style: preserve-3d;
+            background: #8b4513;
+            border-radius: 15px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 3px #a0522d,
+                inset 0 0 0 6px #8b4513;
+        }
+
+        .book-page {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            background: 
+                linear-gradient(135deg, #fefefe 0%, #f8f6f0 100%);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 
+                inset 0 0 20px rgba(139, 69, 19, 0.1),
+                0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            background-image: 
+                linear-gradient(90deg, transparent 0%, transparent 48%, rgba(139, 69, 19, 0.1) 49%, rgba(139, 69, 19, 0.1) 51%, transparent 52%, transparent 100%);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d2b48c;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: #fffefd;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: #fcf8f6;
+            font-style: italic;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #daa520;
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .recipe-title {
+            font-size: 1.4rem;
+            color: #8b4513;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .recipe-ingredients {
+            margin-bottom: 15px;
+        }
+
+        .recipe-ingredients h4 {
+            color: #a0522d;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .recipe-ingredients ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .recipe-ingredients li {
+            padding: 3px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .recipe-ingredients li:before {
+            content: "🌿";
+            position: absolute;
+            left: 0;
+        }
+
+        .recipe-instructions h4 {
+            color: #a0522d;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .recipe-instructions p {
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .recipe-time {
+            background: linear-gradient(135deg, #daa520, #b8860b);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Animações suaves */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-width: 600px;
+                position: static;
+                margin-bottom: 20px;
+            }
+            
+            .book {
+                width: 100%;
+                max-width: 700px;
+                height: auto;
+                min-height: 500px;
+            }
+            
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .book-page {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .recipe-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>📖 Categorias</h2>
+            <button class="category-btn active" data-category="all">Todas as Receitas</button>
+            <button class="category-btn" data-category="doces">🍰 Doces</button>
+            <button class="category-btn" data-category="salgados">🥘 Pratos Principais</button>
+            <button class="category-btn" data-category="aperitivos">🧀 Aperitivos</button>
+            <button class="category-btn" data-category="bebidas">🥤 Bebidas</button>
+            <button class="category-btn" data-category="sobremesas">🍨 Sobremesas</button>
+        </div>
+
+        <div class="book-container">
+            <div class="book">
+                <div class="book-page">
+                    <div class="page-header">
+                        <h1 class="page-title">Meu Livro de Receitas</h1>
+                        <p class="page-subtitle">Sabores que aquecem o coração</p>
+                    </div>
+
+                    <div class="recipes-grid" id="recipes-container">
+                        <!-- Receitas de Doces -->
+                        <div class="recipe-card fade-in" data-category="doces">
+                            <h3 class="recipe-title">Bolo de Chocolate Cremoso</h3>
+                            <div class="recipe-ingredients">
+                                <h4>Ingredientes:</h4>
+                                <ul>
+                                    <li>2 xícaras de farinha de trigo</li>
+                                    <li>1 xícara de chocolate em pó</li>
+                                    <li>2 xícaras de açúcar</li>
+                                    <li>3 ovos</li>
+                                    <li>1 xícara de leite</li>
+                                    <li>1/2 xícara de óleo</li>
+                                </ul>
+                            </div>
+                            <div class="recipe-instructions">
+                                <h4>Modo de Preparo:</h4>
+                                <p>Misture todos os ingredientes secos, adicione os líquidos e bata bem. Asse em forno preaquecido a 180°C por aproximadamente 40 minutos. Um bolo úmido e saboroso para alegrar qualquer momento.</p>
+                            </div>
+                            <span class="recipe-time">⏰ 1h 20min</span>
+                        </div>
+
+                        <!-- Receitas de Pratos Principais -->
+                        <div class="recipe-card fade-in" data-category="salgados">
+                            <h3 class="recipe-title">Risotto de Cogumelos</h3>
+                            <div class="recipe-ingredients">
+                                <h4>Ingredientes:</h4>
+                                <ul>
+                                    <li>1 xícara de arroz arbóreo</li>
+                                    <li>300g de cogumelos variados</li>
+                                    <li>1 cebola média picada</li>
+                                    <li>3 xícaras de caldo de legumes</li>
+                                    <li>1/2 xícara de vinho branco</li>
+                                    <li>Queijo parmesão ralado</li>
+                                </ul>
+                            </div>
+                            <div class="recipe-instructions">
+                                <h4>Modo de Preparo:</h4>
+                                <p>Refogue a cebola, adicione o arroz e o vinho. Vá adicionando o caldo aos poucos, mexendo sempre. Adicione os cogumelos salteados no final. Um prato cremoso e reconfortante.</p>
+                            </div>
+                            <span class="recipe-time">⏰ 45min</span>
+                        </div>
+
+                        <!-- Receitas de Aperitivos -->
+                        <div class="recipe-card fade-in" data-category="aperitivos">
+                            <h3 class="recipe-title">Bruschetta Italiana</h3>
+                            <div class="recipe-ingredients">
+                                <h4>Ingredientes:</h4>
+                                <ul>
+                                    <li>1 pão italiano fatiado</li>
+                                    <li>4 tomates maduros</li>
+                                    <li>1 dente de alho</li>
+                                    <li>Manjericão fresco</li>
+                                    <li>Azeite extra virgem</li>
+                                    <li>Sal e pimenta</li>
+                                </ul>
+                            </div>
+                            <div class="recipe-instructions">
+                                <h4>Modo de Preparo:</h4>
+                                <p>Torre o pão, esfregue com alho. Misture tomates picados com manjericão, azeite, sal e pimenta. Sirva sobre o pão. Perfeito para receber amigos.</p>
+                            </div>
+                            <span class="recipe-time">⏰ 15min</span>
+                        </div>
+
+                        <!-- Receitas de Bebidas -->
+                        <div class="recipe-card fade-in" data-category="bebidas">
+                            <h3 class="recipe-title">Limonada Suíça</h3>
+                            <div class="recipe-ingredients">
+                                <h4>Ingredientes:</h4>
+                                <ul>
+                                    <li>6 limões</li>
+                                    <li>1 lata de leite condensado</li>
+                                    <li>2 copos de água gelada</li>
+                                    <li>Gelo</li>
+                                    <li>Açúcar a gosto</li>
+                                </ul>
+                            </div>
+                            <div class="recipe-instructions">
+                                <h4>Modo de Preparo:</h4>
+                                <p>Bata todos os ingredientes no liquidificador, coe se desejar. Sirva bem gelado com gelo. Uma bebida refrescante e cremosa para dias quentes.</p>
+                            </div>
+                            <span class="recipe-time">⏰ 10min</span>
+                        </div>
+
+                        
+
+                        <!-- Receitas de Sobremesas -->
+                        <div class="recipe-card fade-in" data-category="sobremesas">
+                            <h3 class="recipe-title">Tiramisu Clássico</h3>
+                            <div class="recipe-ingredients">
+                                <h4>Ingredientes:</h4>
+                                <ul>
+                                    <li>300g de biscoito champagne</li>
+                                    <li>500g de mascarpone</li>
+                                    <li>4 ovos</li>
+                                    <li>4 colheres de açúcar</li>
+                                    <li>2 xícaras de café forte</li>
+                                    <li>Cacau em pó</li>
+                                </ul>
+                            </div>
+                            <div class="recipe-instructions">
+                                <h4>Modo de Preparo:</h4>
+                                <p>Prepare o creme com mascarpone, gemas e açúcar. Monte intercalando biscoitos molhados no café com o creme. Leve à geladeira por 4 horas. Polvilhe cacau antes de servir.</p>
+                            </div>
+                            <span class="recipe-time">⏰ 4h 30min</span>
+                        </div>
+
+                        <!-- Mais receitas de Doces -->
+                        <div class="recipe-card fade-in" data-category="doces">
+                            <h3 class="recipe-title">Brigadeiro Gourmet</h3>
+                            <div class="recipe-ingredients">
+                                <h4>Ingredientes:</h4>
+                                <ul>
+                                    <li>1 lata de leite condensado</li>
+                                    <li>3 colheres de chocolate em pó</li>
+                                    <li>1 colher de manteiga</li>
+                                    <li>Chocolate granulado</li>
+                                </ul>
+                            </div>
+                            <div class="recipe-instructions">
+                                <h4>Modo de Preparo:</h4>
+                                <p>Misture todos os ingredientes em uma panela e cozinhe em fogo baixo, mexendo sempre, até desgrudar do fundo. Deixe esfriar, faça as bolinhas e passe no granulado.</p>
+                            </div>
+                            <span class="recipe-time">⏰ 30min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const recipeCards = document.querySelectorAll('.recipe-card');
+        const recipesContainer = document.getElementById('recipes-container');
+
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+
+                const selectedCategory = button.getAttribute('data-category');
+                
+                // Add fade out effect
+                recipesContainer.style.opacity = '0.3';
+                
+                setTimeout(() => {
+                    // Filter recipes
+                    recipeCards.forEach(card => {
+                        const cardCategory = card.getAttribute('data-category');
+                        
+                        if (selectedCategory === 'all' || cardCategory === selectedCategory) {
+                            card.classList.remove('hidden');
+                            card.style.display = 'block';
+                        } else {
+                            card.classList.add('hidden');
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    // Fade in effect
+                    recipesContainer.style.opacity = '1';
+                }, 200);
+            });
+        });
+
+        // Add hover effects to recipe cards
+        recipeCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
