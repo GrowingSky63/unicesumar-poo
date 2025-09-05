@@ -1,7 +1,4 @@
-
-from pint import UnitRegistry, Unit
-
-ureg = UnitRegistry()
+from dataclasses import dataclass
 
 # Lista de unidades culinárias permitidas
 COOKING_UNITS = {
@@ -10,21 +7,32 @@ COOKING_UNITS = {
 	'teaspoon', 'tablespoon', 'cup', 'tbsp', 'tsp',
 	'oz', 'ounce', 'lb', 'pound',
 	'pinch', 'dash', 'quart', 'pint', 'gal', 'gallon',
-	'unit', 'count',
+	'unit', 'count'
 }
 
-class Quantidade(Unit):
-	def __new__(cls, value, units):
-		# Normaliza unidade para comparação
-		unit_str = str(units).lower()
-		# Verifica se a unidade está entre as permitidas
-		if not any(u in unit_str for u in COOKING_UNITS):
-			raise ValueError(f"Unidade '{units}' não é uma unidade culinária válida.")
-		# Cria a unidade usando o UnitRegistry
-		obj = ureg.Quantity(value, units).to_base_units()._units
-		# Instancia como Unit
-		return super().__new__(cls, obj)
+@dataclass(frozen=True)
+class Quantidade:
+	valor: float
+	unidade: str
 
-	def __init__(self, value, units):
-		# Não faz nada, pois Unit é imutável
-		pass
+	def __post_init__(self):
+		unit_str = self.unidade.lower()
+		if not any(u == unit_str for u in COOKING_UNITS):
+			raise ValueError(f"Unidade '{self.unidade}' não é uma unidade culinária válida.")
+
+	def __str__(self):
+		# Representação simples "valor unidade"
+		return f"{self.valor} {self.unidade}"
+
+	@classmethod
+	def from_string(cls, s: str):
+		# Espera formato "valor unidade" (primeiro token numérico, resto unidade)
+		parts = s.strip().split(maxsplit=1)
+		if len(parts) != 2:
+			raise ValueError(f"Formato de quantidade inválido: '{s}'")
+		value_raw, unit = parts
+		try:
+			value = float(value_raw)
+		except ValueError as e:
+			raise ValueError(f"Valor numérico inválido em quantidade: '{value_raw}'") from e
+		return cls(value, unit)

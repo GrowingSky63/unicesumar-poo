@@ -5,16 +5,17 @@ from datetime import datetime
 from domain.entities.receita import Receita
 from domain.entities.ingrediente import Ingrediente
 from domain.entities.categoria import Categoria
+from infraestructure.repositories.livro_repository import LivroReceitasRepository
+from infraestructure.database import init_db
+from infraestructure.repositories.livro_sqlite_repository import LivroReceitasSQLiteRepository
 
 if __name__ == "__main__":
-    # Teste de Autor válido
     try:
         autor_valido = Autor('Maria Silva')
         print(f"Autor válido criado: {autor_valido}")
     except Exception as e:
         print(f"Erro ao criar autor válido: {e}")
 
-    # Teste de Autor inválido
     try:
         autor_invalido = Autor('Maria')
         print(f"Autor inválido criado (não deveria): {autor_invalido}")
@@ -33,7 +34,6 @@ if __name__ == "__main__":
     except Exception as e:
         print('Corretamente rejeitou unidade inválida:', e)
 
-    # Criando ingredientes
     ingrediente1 = Ingrediente('Farinha', Quantidade(200, 'gram'))
     ingrediente2 = Ingrediente('Açúcar', Quantidade(100, 'gram'))
     ingrediente3 = Ingrediente('Leite', Quantidade(300, 'ml'))
@@ -81,6 +81,21 @@ if __name__ == "__main__":
         receitas_avulsas=[receita2],
         categorias=[categoria_doces, categoria_salgados]
     )
+
+    # Repositório em memória
+    repo = LivroReceitasRepository()
+    repo.add(livro)
+    print(f"Livro persistido em memória. Total armazenado: {len(repo.list())}")
+    recuperado = repo.get(livro.id)
+    print('Recuperado pelo ID igual?', recuperado is livro)
+
+    # Repositório SQLite
+    init_db()
+    sqlite_repo = LivroReceitasSQLiteRepository()
+    sqlite_repo.add(livro)
+    print('Livro salvo em SQLite.')
+    mesmo = sqlite_repo.get(livro.id)
+    print('Carregado do SQLite título:', mesmo.titulo if mesmo else 'N/A')
 
     print('Livro de receitas criado com:', len(livro.receitas), 'receitas')
     for r in livro.receitas:

@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Set, List, Optional
+from uuid import uuid4
 
 from domain.entities.receita import Receita
 from domain.entities.categoria import Categoria
@@ -14,26 +15,31 @@ class LivroReceitas:
     data_criacao: datetime
     receitas: List[Receita] = field(default_factory=list)
     categorias: List[Categoria] = field(default_factory=list)
+    id: str = field(default_factory=lambda: str(uuid4()), init=False)
 
     def __init__(self, titulo: str, autor: Autor, data_criacao: datetime,
                  receitas: Optional[List[Receita]] = None,
                  categorias: Optional[List[Categoria]] = None,
                  receitas_avulsas: Optional[List[Receita]] = None):
-        self.titulo = titulo
-        self.autor = autor
-        self.data_criacao = data_criacao
-        self.categorias = categorias if categorias is not None else []
+        # Atribuições básicas
+        object.__setattr__(self, 'titulo', titulo)
+        object.__setattr__(self, 'autor', autor)
+        object.__setattr__(self, 'data_criacao', data_criacao)
+        object.__setattr__(self, 'categorias', categorias if categorias is not None else [])
+        object.__setattr__(self, 'receitas', [])
+        object.__setattr__(self, 'id', str(uuid4()))
         # Coletar todas as receitas das categorias
-        receitas_categorias = []
+        receitas_categorias: List[Receita] = []
         for cat in self.categorias:
             receitas_categorias.extend(cat.receitas)
         # Adicionar receitas avulsas (não vinculadas a categorias)
         if receitas_avulsas is not None:
-            self.receitas = receitas_categorias + [r for r in receitas_avulsas if r not in receitas_categorias]
+            todas = receitas_categorias + [r for r in receitas_avulsas if r not in receitas_categorias]
         elif receitas is not None:
-            self.receitas = receitas
+            todas = receitas
         else:
-            self.receitas = receitas_categorias
-        # Atualizar as listas de cada categoria para garantir que apontam para objetos do principal
+            todas = receitas_categorias
+        object.__setattr__(self, 'receitas', todas)
+        # Ajustar listas de cada categoria
         for cat in self.categorias:
             cat.receitas = [r for r in cat.receitas if r in self.receitas]
