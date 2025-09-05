@@ -10,6 +10,13 @@
 <div class="container">
   <div class="sidebar">
     <h2>📖 Categorias</h2>
+    <div class="livro-box" style="margin-bottom:12px;">
+      <label style="font-size:0.85rem;display:block;margin-bottom:4px;">Livro:</label>
+      <div style="display:flex; gap:4px;">
+        <select id="select-livro" style="flex:1; padding:4px; border-radius:6px;"></select>
+        <button id="btn-novo-livro" style="padding:4px 8px;">+</button>
+      </div>
+    </div>
     <div id="categorias-list"></div>
     <button id="btn-nova-cat">+ Nova Categoria</button>
   </div>
@@ -34,23 +41,30 @@ let categoriaAtiva = 'all';
 let formAberto = false;
 let unidadesCache = [];
 let ingredientesCache = [];
+let livrosCache = [];
 
-async function ensureLivro(){
-  if(livroId) return livroId;
+async function carregarLivros(){
   const resp = await fetch(`${API_BASE}/livros`);
-  const lista = await resp.json();
-  if(lista.length){
-     livroId = lista[0].id;
-     return livroId;
+  livrosCache = await resp.json();
+  if(!livrosCache.length){
+    const novoResp = await fetch(`${API_BASE}/livros`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({titulo:'Meu Primeiro Livro', autor:'Autor Exemplo'})});
+    const novo = await novoResp.json();
+    livrosCache = [novo];
   }
-  const novo = await fetch(`${API_BASE}/livros`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({titulo:'Meu Livro', autor:'Autor Exemplo'})});
-  const data = await novo.json();
-  livroId = data.id;
-  return livroId;
+  if(!livroId || !livrosCache.find(l=>l.id===livroId)){
+    livroId = livrosCache[0].id;
+  }
+  renderSeletorLivros();
+}
+
+function renderSeletorLivros(){
+  const sel = document.getElementById('select-livro');
+  if(!sel) return;
+  sel.innerHTML = livrosCache.map(l=>`<option value="${l.id}" ${l.id===livroId?'selected':''}>${l.titulo}</option>`).join('');
 }
 
 async function carregarLivro(){
-  await ensureLivro();
+  await carregarLivros();
   await carregarUnidades();
   await carregarIngredientesExistentes();
   const resp = await fetch(`${API_BASE}/livros/${livroId}`);
@@ -208,6 +222,30 @@ document.getElementById('btn-nova-cat').onclick = async ()=>{
   if(!nome) return;
   await fetch(`${API_BASE}/livros/${livroId}/categorias`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome})});
   carregarLivro();
+};
+
+document.getElementById('select-livro').addEventListener('change', async (e)=>{
+  livroId = e.target.value;
+  categoriaAtiva = 'all';
+  formAberto = false;
+  await carregarLivro();
+});
+
+document.getElementById('btn-novo-livro').onclick = async ()=>{
+  const titulo = prompt('Título do novo livro:');
+  const autor = prompt('Autor:', 'Autor Exemplo');
+  if(!titulo || !autor) return;
+  const resp = await fetch(`${API_BASE}/livros`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({titulo, autor})});
+  if(resp.ok){
+    const novo = await resp.json();
+    livrosCache.push(novo);
+    livroId = novo.id;
+    categoriaAtiva='all';
+    renderSeletorLivros();
+    await carregarLivro();
+  } else {
+    alert('Erro ao criar livro');
+  }
 };
 
 document.getElementById('btn-nova-receita').onclick = async ()=>{
