@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-# Lista de unidades culinárias permitidas
 COOKING_UNITS = {
 	'gram', 'kilogram', 'mg', 'g', 'kg', 'milligram',
 	'liter', 'milliliter', 'l', 'ml',
@@ -21,12 +20,10 @@ class Quantidade:
 			raise ValueError(f"Unidade '{self.unidade}' não é uma unidade culinária válida.")
 
 	def __str__(self):
-		# Representação simples "valor unidade"
 		return f"{self.valor} {self.unidade}"
 
 	@classmethod
 	def from_string(cls, s: str):
-		# Espera formato "valor unidade" (primeiro token numérico, resto unidade)
 		parts = s.strip().split(maxsplit=1)
 		if len(parts) != 2:
 			raise ValueError(f"Formato de quantidade inválido: '{s}'")

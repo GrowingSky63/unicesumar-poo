@@ -1,131 +1,133 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8" />
-<title>Livro de Receitas (Dinâmico)</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="stylesheet" href="/static/style.css" />
+  <meta charset="UTF-8" />
+  <title>Livro de Receitas (Dinâmico)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
+
 <body>
-<div class="container">
-  <div class="sidebar">
-    <h2>📖 Categorias</h2>
-    <div class="livro-box" style="margin-bottom:12px;">
-      <label style="font-size:0.85rem;display:block;margin-bottom:4px;">Livro:</label>
-      <div style="display:flex; gap:4px;">
-        <select id="select-livro" style="flex:1; padding:4px; border-radius:6px;"></select>
-        <button id="btn-novo-livro" style="padding:4px 8px;">+</button>
-      </div>
-    </div>
-    <div id="categorias-list"></div>
-    <button id="btn-nova-cat">+ Nova Categoria</button>
-  </div>
-  <div class="book-container">
-    <div class="book">
-      <div class="book-page">
-        <div class="page-header">
-          <h1 class="page-title" id="livro-titulo">Carregando...</h1>
-          <p class="page-subtitle" id="livro-autor"></p>
-          <button id="btn-nova-receita">+ Nova Receita</button>
+  <div class="container">
+    <div class="sidebar">
+      <h2>📖 Categorias</h2>
+      <div class="livro-box" style="margin-bottom:12px;">
+        <label style="font-size:0.85rem;display:block;margin-bottom:4px;">Livro:</label>
+        <div style="display:flex; gap:4px;">
+          <select id="select-livro" style="flex:1; padding:4px; border-radius:6px;"></select>
+          <button id="btn-novo-livro" style="padding:4px 8px;">+</button>
         </div>
-        <div id="receitas" class="recipes-grid"></div>
+      </div>
+      <div id="categorias-list"></div>
+      <button id="btn-nova-cat">+ Nova Categoria</button>
+    </div>
+    <div class="book-container">
+      <div class="book">
+        <div class="book-page">
+          <div class="page-header">
+            <h1 class="page-title" id="livro-titulo">Carregando...</h1>
+            <p class="page-subtitle" id="livro-autor"></p>
+            <button id="btn-nova-receita">+ Nova Receita</button>
+          </div>
+          <div id="receitas" class="recipes-grid"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<script>
-const API_BASE = 'http://127.0.0.1:5000';
-let livroId = null;
-let cacheLivro = null;
-let categoriaAtiva = 'all';
-let formAberto = false;
-let unidadesCache = [];
-let ingredientesCache = [];
-let livrosCache = [];
+  <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+    let livroId = null;
+    let cacheLivro = null;
+    let categoriaAtiva = 'all';
+    let formAberto = false;
+    let unidadesCache = [];
+    let ingredientesCache = [];
+    let livrosCache = [];
 
-async function carregarLivros(){
-  const resp = await fetch(`${API_BASE}/livros`);
-  livrosCache = await resp.json();
-  if(!livrosCache.length){
-    const novoResp = await fetch(`${API_BASE}/livros`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({titulo:'Meu Primeiro Livro', autor:'Autor Exemplo'})});
-    const novo = await novoResp.json();
-    livrosCache = [novo];
-  }
-  if(!livroId || !livrosCache.find(l=>l.id===livroId)){
-    livroId = livrosCache[0].id;
-  }
-  renderSeletorLivros();
-}
+    async function carregarLivros() {
+      const resp = await fetch(`${API_BASE}/livros`);
+      livrosCache = await resp.json();
+      if (!livrosCache.length) {
+        const novoResp = await fetch(`${API_BASE}/livros`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: 'Meu Primeiro Livro', autor: 'Autor Exemplo' }) });
+        const novo = await novoResp.json();
+        livrosCache = [novo];
+      }
+      if (!livroId || !livrosCache.find(l => l.id === livroId)) {
+        livroId = livrosCache[0].id;
+      }
+      renderSeletorLivros();
+    }
 
-function renderSeletorLivros(){
-  const sel = document.getElementById('select-livro');
-  if(!sel) return;
-  sel.innerHTML = livrosCache.map(l=>`<option value="${l.id}" ${l.id===livroId?'selected':''}>${l.titulo}</option>`).join('');
-}
+    function renderSeletorLivros() {
+      const sel = document.getElementById('select-livro');
+      if (!sel) return;
+      sel.innerHTML = livrosCache.map(l => `<option value="${l.id}" ${l.id === livroId ? 'selected' : ''}>${l.titulo}</option>`).join('');
+    }
 
-async function carregarLivro(){
-  await carregarLivros();
-  await carregarUnidades();
-  await carregarIngredientesExistentes();
-  const resp = await fetch(`${API_BASE}/livros/${livroId}`);
-  cacheLivro = await resp.json();
-  document.getElementById('livro-titulo').textContent = cacheLivro.titulo;
-  document.getElementById('livro-autor').textContent = 'Autor: ' + cacheLivro.autor;
-  renderCategorias();
-  renderReceitas();
-}
+    async function carregarLivro() {
+      await carregarLivros();
+      await carregarUnidades();
+      await carregarIngredientesExistentes();
+      const resp = await fetch(`${API_BASE}/livros/${livroId}`);
+      cacheLivro = await resp.json();
+      document.getElementById('livro-titulo').textContent = cacheLivro.titulo;
+      document.getElementById('livro-autor').textContent = 'Autor: ' + cacheLivro.autor;
+      renderCategorias();
+      renderReceitas();
+    }
 
-async function carregarUnidades(){
-  if(unidadesCache.length) return;
-  const resp = await fetch(`${API_BASE}/unidades`);
-  const data = await resp.json();
-  unidadesCache = data.unidades || [];
-}
+    async function carregarUnidades() {
+      if (unidadesCache.length) return;
+      const resp = await fetch(`${API_BASE}/unidades`);
+      const data = await resp.json();
+      unidadesCache = data.unidades || [];
+    }
 
-async function carregarIngredientesExistentes(){
-  const resp = await fetch(`${API_BASE}/livros/${livroId}/ingredientes`);
-  const data = await resp.json();
-  ingredientesCache = data.ingredientes || [];
-}
+    async function carregarIngredientesExistentes() {
+      const resp = await fetch(`${API_BASE}/livros/${livroId}/ingredientes`);
+      const data = await resp.json();
+      ingredientesCache = data.ingredientes || [];
+    }
 
-function renderCategorias(){
-  const cont = document.getElementById('categorias-list');
-  cont.innerHTML = '<button class="category-btn'+(categoriaAtiva==='all'?' active':'')+'" data-id="all">Todas</button>';
-  cacheLivro.categorias.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'category-btn'+(categoriaAtiva===c.id?' active':'');
-    btn.textContent = c.nome;
-    btn.dataset.id = c.id;
-    btn.onclick = ()=>{categoriaAtiva=c.id; atualizarEstadoCategorias(); filtrarReceitas(c.id);};
-    cont.appendChild(btn);
-  });
-  const allBtn = cont.querySelector('button.category-btn[data-id="all"]');
-  if(allBtn){
-    allBtn.onclick = ()=>{ categoriaAtiva='all'; atualizarEstadoCategorias(); filtrarReceitas('all'); };
-  }
-}
+    function renderCategorias() {
+      const cont = document.getElementById('categorias-list');
+      cont.innerHTML = '<button class="category-btn' + (categoriaAtiva === 'all' ? ' active' : '') + '" data-id="all">Todas</button>';
+      cacheLivro.categorias.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'category-btn' + (categoriaAtiva === c.id ? ' active' : '');
+        btn.textContent = c.nome;
+        btn.dataset.id = c.id;
+        btn.onclick = () => { categoriaAtiva = c.id; atualizarEstadoCategorias(); filtrarReceitas(c.id); };
+        cont.appendChild(btn);
+      });
+      const allBtn = cont.querySelector('button.category-btn[data-id="all"]');
+      if (allBtn) {
+        allBtn.onclick = () => { categoriaAtiva = 'all'; atualizarEstadoCategorias(); filtrarReceitas('all'); };
+      }
+    }
 
-function atualizarEstadoCategorias(){
-  document.querySelectorAll('.category-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.id===categoriaAtiva);
-  });
-}
+    function atualizarEstadoCategorias() {
+      document.querySelectorAll('.category-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.id === categoriaAtiva);
+      });
+    }
 
-function receitaCard(r){
-  const div = document.createElement('div');
-  div.className='recipe-card';
-  div.innerHTML = `<h3 class="recipe-title">${r.nome}</h3>
-    <div class="recipe-ingredients"><h4>Ingredientes:</h4><ul>${r.ingredientes.map(i=>`<li>${i.quantidade} - ${i.nome}</li>`).join('')}</ul></div>
+    function receitaCard(r) {
+      const div = document.createElement('div');
+      div.className = 'recipe-card';
+      div.innerHTML = `<h3 class="recipe-title">${r.nome}</h3>
+    <div class="recipe-ingredients"><h4>Ingredientes:</h4><ul>${r.ingredientes.map(i => `<li>${i.quantidade} - ${i.nome}</li>`).join('')}</ul></div>
     <div class="recipe-instructions"><h4>Modo:</h4><p>${r.modo_preparo}</p></div>
     <span class="recipe-time">⏰ ${r.tempo_preparo} min</span>`;
-  return div;
-}
+      return div;
+    }
 
-function criarFormularioNovaReceita(){
-  const card = document.createElement('div');
-  card.className = 'recipe-card recipe-form';
-  card.innerHTML = `
-    <h3>Nova Receita ${categoriaAtiva!=='all'?'<small style="font-weight:normal">(Categoria selecionada)</small>':''}</h3>
+    function criarFormularioNovaReceita() {
+      const card = document.createElement('div');
+      card.className = 'recipe-card recipe-form';
+      card.innerHTML = `
+    <h3>Nova Receita ${categoriaAtiva !== 'all' ? '<small style="font-weight:normal">(Categoria selecionada)</small>' : ''}</h3>
     <form id="form-receita">
       <label>Nome*<br><input name="nome" required /></label><br>
       <div class="duo">
@@ -144,120 +146,121 @@ function criarFormularioNovaReceita(){
       </div>
     </form>`;
 
-  // Funções de ingredientes
-  const lista = card.querySelector('#lista-ingredientes');
-  function adicionarLinha(qtd='', unidade='', nome=''){
-     const row = document.createElement('div');
-     row.className='ing-row';
-     const unidadesOptions = unidadesCache.map(u=>`<option value="${u}"></option>`).join('');
-     const ingredientesOptions = ingredientesCache.map(i=>`<option value="${i}"></option>`).join('');
-     row.innerHTML = `
+      // Funções de ingredientes
+      const lista = card.querySelector('#lista-ingredientes');
+      function adicionarLinha(qtd = '', unidade = '', nome = '') {
+        const row = document.createElement('div');
+        row.className = 'ing-row';
+        const unidadesOptions = unidadesCache.map(u => `<option value="${u}"></option>`).join('');
+        const ingredientesOptions = ingredientesCache.map(i => `<option value="${i}"></option>`).join('');
+        row.innerHTML = `
        <input placeholder="Qtd" class="ing-qtd" value="${qtd}" style="width:60px" />
        <input list="lista-unidades" placeholder="Unid" class="ing-unid" value="${unidade}" style="width:80px" />
        <input list="lista-ingredientes" placeholder="Nome do ingrediente" class="ing-nome" value="${nome}" />
        <button type="button" class="rem">✕</button>
        <datalist id="lista-unidades">${unidadesOptions}</datalist>
        <datalist id="lista-ingredientes">${ingredientesOptions}</datalist>`;
-     row.querySelector('.rem').onclick = ()=>{ row.remove(); };
-     lista.appendChild(row);
-  }
-  adicionarLinha();
-  card.querySelector('#btn-add-ing').onclick = ()=>adicionarLinha();
+        row.querySelector('.rem').onclick = () => { row.remove(); };
+        lista.appendChild(row);
+      }
+      adicionarLinha();
+      card.querySelector('#btn-add-ing').onclick = () => adicionarLinha();
 
-  card.querySelector('#btn-cancelar').onclick = ()=>{
-     formAberto = false;
-     card.remove();
-  };
+      card.querySelector('#btn-cancelar').onclick = () => {
+        formAberto = false;
+        card.remove();
+      };
 
-  card.querySelector('#form-receita').onsubmit = async (e)=>{
-     e.preventDefault();
-     const fd = new FormData(e.target);
-     const nome = fd.get('nome').toString().trim();
-     const tempo = fd.get('tempo').toString();
-     const rendimento = fd.get('rendimento').toString();
-     const modo = fd.get('modo').toString();
-     const ingRows = Array.from(lista.querySelectorAll('.ing-row'));
-     const ingredientes = ingRows.map(r=>{
-        const q = r.querySelector('.ing-qtd').value.trim();
-        const u = r.querySelector('.ing-unid').value.trim();
-        const n = r.querySelector('.ing-nome').value.trim();
-        if(!n) return null;
-        const quantidade = (q && u) ? `${q} ${u}` : (q? q : '1 unit');
-        return {nome:n, quantidade};
-     }).filter(Boolean);
-     if(!nome || !modo){ alert('Preencha os campos obrigatórios.'); return; }
-     const url = new URL(`${API_BASE}/livros/${livroId}/receitas`);
-     if(categoriaAtiva !== 'all') url.searchParams.set('categoria_id', categoriaAtiva);
-     const resp = await fetch(url.toString(), {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, modo_preparo:modo, tempo_preparo:tempo, rendimento, ingredientes})});
-     if(!resp.ok){
-        const err = await resp.text();
-        alert('Erro ao salvar: '+err);
-        return;
-     }
-     formAberto = false;
-     await carregarLivro();
-     atualizarEstadoCategorias();
-     filtrarReceitas(categoriaAtiva);
-  };
-  return card;
-}
+      card.querySelector('#form-receita').onsubmit = async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const nome = fd.get('nome').toString().trim();
+        const tempo = fd.get('tempo').toString();
+        const rendimento = fd.get('rendimento').toString();
+        const modo = fd.get('modo').toString();
+        const ingRows = Array.from(lista.querySelectorAll('.ing-row'));
+        const ingredientes = ingRows.map(r => {
+          const q = r.querySelector('.ing-qtd').value.trim();
+          const u = r.querySelector('.ing-unid').value.trim();
+          const n = r.querySelector('.ing-nome').value.trim();
+          if (!n) return null;
+          const quantidade = (q && u) ? `${q} ${u}` : (q ? q : '1 unit');
+          return { nome: n, quantidade };
+        }).filter(Boolean);
+        if (!nome || !modo) { alert('Preencha os campos obrigatórios.'); return; }
+        const url = new URL(`${API_BASE}/livros/${livroId}/receitas`);
+        if (categoriaAtiva !== 'all') url.searchParams.set('categoria_id', categoriaAtiva);
+        const resp = await fetch(url.toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, modo_preparo: modo, tempo_preparo: tempo, rendimento, ingredientes }) });
+        if (!resp.ok) {
+          const err = await resp.text();
+          alert('Erro ao salvar: ' + err);
+          return;
+        }
+        formAberto = false;
+        await carregarLivro();
+        atualizarEstadoCategorias();
+        filtrarReceitas(categoriaAtiva);
+      };
+      return card;
+    }
 
-function renderReceitas(lista){
-  const alvo = document.getElementById('receitas');
-  alvo.innerHTML='';
-  (lista || cacheLivro.receitas).forEach(r=>alvo.appendChild(receitaCard(r)));
-}
+    function renderReceitas(lista) {
+      const alvo = document.getElementById('receitas');
+      alvo.innerHTML = '';
+      (lista || cacheLivro.receitas).forEach(r => alvo.appendChild(receitaCard(r)));
+    }
 
-function filtrarReceitas(catId){
-  if(catId==='all'){ renderReceitas(); return; }
-  const cat = cacheLivro.categorias.find(c=>c.id===catId);
-  if(!cat){return;}
-  const ids = new Set(cat.receitas);
-  const filtradas = cacheLivro.receitas.filter(r=>ids.has(r.id));
-  renderReceitas(filtradas);
-}
+    function filtrarReceitas(catId) {
+      if (catId === 'all') { renderReceitas(); return; }
+      const cat = cacheLivro.categorias.find(c => c.id === catId);
+      if (!cat) { return; }
+      const ids = new Set(cat.receitas);
+      const filtradas = cacheLivro.receitas.filter(r => ids.has(r.id));
+      renderReceitas(filtradas);
+    }
 
-document.getElementById('btn-nova-cat').onclick = async ()=>{
-  const nome = prompt('Nome da categoria:');
-  if(!nome) return;
-  await fetch(`${API_BASE}/livros/${livroId}/categorias`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome})});
-  carregarLivro();
-};
+    document.getElementById('btn-nova-cat').onclick = async () => {
+      const nome = prompt('Nome da categoria:');
+      if (!nome) return;
+      await fetch(`${API_BASE}/livros/${livroId}/categorias`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) });
+      carregarLivro();
+    };
 
-document.getElementById('select-livro').addEventListener('change', async (e)=>{
-  livroId = e.target.value;
-  categoriaAtiva = 'all';
-  formAberto = false;
-  await carregarLivro();
-});
+    document.getElementById('select-livro').addEventListener('change', async (e) => {
+      livroId = e.target.value;
+      categoriaAtiva = 'all';
+      formAberto = false;
+      await carregarLivro();
+    });
 
-document.getElementById('btn-novo-livro').onclick = async ()=>{
-  const titulo = prompt('Título do novo livro:');
-  const autor = prompt('Autor:', 'Autor Exemplo');
-  if(!titulo || !autor) return;
-  const resp = await fetch(`${API_BASE}/livros`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({titulo, autor})});
-  if(resp.ok){
-    const novo = await resp.json();
-    livrosCache.push(novo);
-    livroId = novo.id;
-    categoriaAtiva='all';
-    renderSeletorLivros();
-    await carregarLivro();
-  } else {
-    alert('Erro ao criar livro');
-  }
-};
+    document.getElementById('btn-novo-livro').onclick = async () => {
+      const titulo = prompt('Título do novo livro:');
+      const autor = prompt('Autor:', 'Autor Exemplo');
+      if (!titulo || !autor) return;
+      const resp = await fetch(`${API_BASE}/livros`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo, autor }) });
+      if (resp.ok) {
+        const novo = await resp.json();
+        livrosCache.push(novo);
+        livroId = novo.id;
+        categoriaAtiva = 'all';
+        renderSeletorLivros();
+        await carregarLivro();
+      } else {
+        alert('Erro ao criar livro');
+      }
+    };
 
-document.getElementById('btn-nova-receita').onclick = async ()=>{
-  if(formAberto) return; // evita múltiplos
-  formAberto = true;
-  const container = document.getElementById('receitas');
-  const formCard = criarFormularioNovaReceita();
-  container.prepend(formCard);
-  formCard.scrollIntoView({behavior:'smooth'});
-};
+    document.getElementById('btn-nova-receita').onclick = async () => {
+      if (formAberto) return; // evita múltiplos
+      formAberto = true;
+      const container = document.getElementById('receitas');
+      const formCard = criarFormularioNovaReceita();
+      container.prepend(formCard);
+      formCard.scrollIntoView({ behavior: 'smooth' });
+    };
 
-carregarLivro();
-</script>
+    carregarLivro();
+  </script>
 </body>
+
 </html>

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, List, Optional, Protocol
+from typing import Generic, TypeVar, Optional
 
 T = TypeVar('T')
 
@@ -11,7 +11,7 @@ class Repository(ABC, Generic[T]):
 	def get(self, entity_id: str) -> Optional[T]: ...
 
 	@abstractmethod
-	def list(self) -> List[T]: ...
+	def list(self) -> list[T]: ...
 
 	@abstractmethod
 	def remove(self, entity_id: str) -> None: ...

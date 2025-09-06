@@ -1,10 +1,9 @@
 from flask import Flask, jsonify, request, abort, render_template
+from datetime import datetime
 import sys, os
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
-from datetime import datetime
-from uuid import uuid4
 
 from infraestructure.database import init_db
 from infraestructure.repositories.livro_sqlite_repository import LivroReceitasSQLiteRepository
