@@ -5,7 +5,7 @@ from .models import Produto
 
 class ProdutoView:
 
-    def listar_produtos(self, produtos: Iterable[Produto]) -> str:
+    def listar_produtos(self, produtos: Iterable[Produto]) -> str | Iterable:
         """
         Método responsável por montar a visualização da lista de produtos
         """
