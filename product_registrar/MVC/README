@@ -1,0 +1,33 @@
+Notas:
+
+O projeto está bem comentado, mas seguem algumas notas que não eram pertinentes permanecerem no código:
+# models.py:
+    No python, não existe restrição para variáveis e métodos privados, a convenção é: se começa com _, é privado e não devo mexer, mas se eu quiser, eu posso. Neste caso, como a classe não precisa alocar os espaços da memória assim que instanciada, e sim, ir alocando dinamicamente, só definimos as varíaveis self._preco e self.quantidade a primeira vez, nos setters. Basicamente abusamos do python para usar a técnica chamada lazy loading, que defende a incialização ou carregamento sob demanda, para fragmentar os tempos de espera, ao contrário de inicializar tudo no início.
+
+    Em python, uma estrutura mais viável para representar uma classe seria muito mais enxuta, algo como:
+    ```
+    from dataclasses import dataclass
+
+    @dataclass
+    class Produto:
+        id: int
+        nome: str
+        preco: float
+        quantidade: int
+    ```
+
+    Caso seja necessário implementar mais regras de validação ou regras de negócio da entidade, talvés seja necessário utilizar outras bibliotecas e criar métodos de validação, mas para aplicações simples, o modelo nõa passará de 10 linhas, devido a desnecessidade de criar getters e setters.
+
+Para testar o código, recomendamos:
+
+1. clonar o repositório
+ - git clone https://github.com/GrowingSky63/unicesumar-poo eric-e-tata-poo
+ - cd eric-e-tata-poo
+
+2. Verificar versão do python
+ - python -V
+ Ps.: O "V" é maiuscuulo.
+ O código foi feito na versão 3.15.5, mas é pra rodar em qualquer versão acima de 3.13
+
+3. Executar o código
+ - python -m product_registrar.MVC.main

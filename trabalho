@@ -1,0 +1,24 @@
+Aula 02
+Trabalho de POO – em DUPLA
+• Trabalho de SEXTA – pesquisar como fazer uma aplicação simples em
+MVC entregar até dia 07/10.
+• Trabalho de Programação Orientada a Objetos – Padrão MVC• Enunciado:
+Você deverá desenvolver uma aplicação simples utilizando Javae o
+padrão de arquitetura MVC (Model-View-Controller).
+A aplicação será um sistema de cadastro de produtos. O sistema deve
+permitir:
+1.Model (Modelo):
+•Criar uma classe Produto com os atributos: id, nome, preço e quantidade. •Incluir métodos para acessar e modificar esses atributos (getters e setters).2.View (Visão):
+•Criar uma classe responsável por exibir informações ao usuário.
+•Essa classe deve mostrar a lista de produtos cadastrados e mensagens de feedback (como “Produto adicionado com sucesso”).
+3.Controller (Controlador):
+•Criar uma classe que fará a comunicação entre o Model e a View.
+•Essa classe deve permitir:
+•Adicionar um novo produto.
+•Listar todos os produtos.
+•Atualizar a quantidade de um produto.
+•Remover um produto.
+Requisitos do Trabalho:
+•O projeto deve estar organizado em pacotes
+separados: model, view e controller. •O código deve estar bem comentado.
+•O programa deve rodar no console (não é necessário interface gráfica nesta etapa).
