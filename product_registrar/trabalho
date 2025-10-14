@@ -22,3 +22,15 @@ Requisitos do Trabalho:
 •O projeto deve estar organizado em pacotes
 separados: model, view e controller. •O código deve estar bem comentado.
 •O programa deve rodar no console (não é necessário interface gráfica nesta etapa).
+
+Aula 03
+Criar um Sistema MVC de Cadastro de Tarefas do Projeto
+Objetivo: Aplicar o padrão MVC criando um módulo complementar.
+Requisitos:
+Criar um novo Model: Tarefa (descrição, responsável, status)
+Criar View e Controller correspondentes
+Permitir adicionar e listar tarefas
+Integrar com o ProjetoController (cada projeto pode ter várias tarefas)
+
+💡 Desafio extra:
+Adicionar opção de filtrar tarefas por status.

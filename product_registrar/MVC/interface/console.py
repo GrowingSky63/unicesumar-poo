@@ -1,6 +1,6 @@
 from typing import Iterable
-from ..controller import ProdutoController
-from ..views import ProdutoView
+from ..controllers import ProdutoController, ProjetoController, TarefaController
+from ..views import ProdutoView, ProjetoView, TarefaView
 
 
 class ConsoleApp:
@@ -11,8 +11,13 @@ class ConsoleApp:
     def __init__(self) -> None:
         # Instanciando o controlador que gerencia as regras de negócio do app
         self.controller = ProdutoController()
+        # Controladores de Projeto e Tarefa
+        self.projeto_controller = ProjetoController()
+        self.tarefa_controller = TarefaController(self.projeto_controller)
         # Instanciando as classes da view para visualizar as informações
         self.view = ProdutoView()
+        self.projeto_view = ProjetoView()
+        self.tarefa_view = TarefaView()
         # Define o tamanho em caracteres da interface no console
         self.view_width = 70
 
@@ -21,12 +26,13 @@ class ConsoleApp:
         Método responsável pelo loop principal do app
         """
         while True:
-            print(f"{'Sistema de Cadastro de Produtos':-^{self.view_width}}")
+            print(f"{'Sistema de Cadastro de Produtos e Projetos':-^{self.view_width}}")
             print("1. Adicionar produto")
             print("2. Listar produtos")
             print("3. Atualizar quantidade")
             print("4. Remover produto")
             print("5. Buscar por ID")
+            print("6. Projetos - Gerenciar")
             print("0. Sair")
             print(f"{'':-^{self.view_width}}")
             with self._input(self.view_width):
@@ -44,6 +50,8 @@ class ConsoleApp:
                     self._remover()
                 elif opcao == "5":
                     self._buscar()
+                elif opcao == "6":
+                    self._menu_projetos()
                 elif opcao == "0":
                     print("Saindo...")
                     break
@@ -104,6 +112,78 @@ class ConsoleApp:
 
         # Mensagem de sucesso usando o atributo nome da entidade "Produto" no nosso formatador de saídas de dados para o usuário
         self._output(f"Produto '{produto.get_nome()}' adicionado com sucesso.")
+
+    # ======== Projetos / Tarefas ========
+    def _menu_projetos(self) -> None:
+        while True:
+            print(f"{'Projetos':-^{self.view_width}}")
+            print("1. Adicionar projeto")
+            print("2. Listar projetos")
+            print("3. Abrir projeto por ID")
+            print("0. Voltar")
+            print(f"{'':-^{self.view_width}}")
+            with self._input(self.view_width):
+                opcao = input("Escolha uma opção: ").strip()
+
+            try:
+                if opcao == "1":
+                    with self._input(self.view_width):
+                        id_str = input("ID do projeto: ").strip()
+                        nome = input("Nome do projeto: ").strip()
+                    projeto = self.projeto_controller.adicionar_projeto(int(id_str), nome)
+                    self._output(f"Projeto '{projeto.get_nome()}' adicionado com sucesso.")
+                elif opcao == "2":
+                    lista = self.projeto_view.listar_projetos(self.projeto_controller.listar_projetos())
+                    self._output(lista)
+                elif opcao == "3":
+                    with self._input(self.view_width):
+                        id_str = input("ID do projeto: ").strip()
+                    self._menu_tarefas(int(id_str))
+                elif opcao == "0":
+                    break
+                else:
+                    print("Opção inválida.")
+            except ValueError as e:
+                print(f"Erro: {e}")
+
+    def _menu_tarefas(self, projeto_id: int) -> None:
+        projeto = self.projeto_controller.buscar_por_id(projeto_id)
+        self._output(self.projeto_view.mostrar_projeto(projeto))
+        if projeto is None:
+            return
+        while True:
+            print(f"{'Tarefas do Projeto':-^{self.view_width}}")
+            print("1. Adicionar tarefa")
+            print("2. Listar tarefas")
+            print("3. Filtrar tarefas por status")
+            print("0. Voltar")
+            print(f"{'':-^{self.view_width}}")
+            with self._input(self.view_width):
+                opcao = input("Escolha uma opção: ").strip()
+
+            try:
+                if opcao == "1":
+                    with self._input(self.view_width):
+                        descricao = input("Descrição: ").strip()
+                        responsavel = input("Responsável: ").strip()
+                        status = input("Status (pendente, em_andamento, concluida) [default pendente]: ").strip()
+                        status = status or "pendente"
+                    tarefa = self.tarefa_controller.adicionar_tarefa(projeto_id, descricao, responsavel, status)
+                    self._output(f"Tarefa adicionada: {self.tarefa_view.mostrar_tarefa(tarefa)}")
+                elif opcao == "2":
+                    lista = self.tarefa_view.listar_tarefas(self.tarefa_controller.listar_tarefas(projeto_id))
+                    self._output(lista)
+                elif opcao == "3":
+                    with self._input(self.view_width):
+                        status = input("Status (pendente, em_andamento, concluida): ").strip()
+                    lista = self.tarefa_view.listar_tarefas(self.tarefa_controller.filtrar_tarefas(projeto_id, status))
+                    self._output(lista)
+                elif opcao == "0":
+                    break
+                else:
+                    print("Opção inválida.")
+            except ValueError as e:
+                print(f"Erro: {e}")
 
     def _atualizar_quantidade(self) -> None:
         """
