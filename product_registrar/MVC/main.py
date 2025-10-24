@@ -1,11 +1,11 @@
 from .interface.console import ConsoleApp
-
+from .database import init_db
 
 def main() -> None:
-    app = ConsoleApp()
-    app.executar()
-
+  init_db()
+  app = ConsoleApp()
+  app.executar()
 
 if __name__ == "__main__":
-    main()
+  main()
 

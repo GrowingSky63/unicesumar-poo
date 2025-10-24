@@ -15,10 +15,10 @@ from dataclasses import dataclass
 
 @dataclass
 class Produto:
-    id: int
-    nome: str
-    preco: float
-    quantidade: int
+  id: int
+  nome: str
+  preco: float
+  quantidade: int
 ```
 
 Caso seja necessário implementar mais regras de validação ou regras de negócio da entidade, talvez seja necessário utilizar outras bibliotecas e criar métodos de validação, mas para aplicações simples, o modelo não passará de 10 linhas, devido a desnecessidade de criar getters e setters.
